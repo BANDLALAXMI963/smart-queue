@@ -8,214 +8,60 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --teal: #0F6E56;
-    --teal-light: #E1F5EE;
-    --teal-mid: #1D9E75;
-    --navy: #042C53;
-    --blue-light: #E6F1FB;
-    --text: #1a1a2e;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --error: #dc2626;
-    --surface: #f8fafb;
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #1D9E75;
+    --navy: #042C53; --text: #1a1a2e; --muted: #6b7280;
+    --border: #e5e7eb; --white: #ffffff; --error: #dc2626; --surface: #f8fafb;
   }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--surface);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  nav {
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 2rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-mark {
-    width: 34px; height: 34px;
-    background: var(--teal);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--surface); min-height: 100vh; display: flex; flex-direction: column; }
+  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 34px; height: 34px; background: var(--teal); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
   .logo-mark svg { width: 18px; height: 18px; fill: white; }
-  .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--navy); letter-spacing: -0.5px; }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--navy); }
   .logo-text span { color: var(--teal-mid); }
-
-  .main-wrap {
-    display: grid;
-    grid-template-columns: 1fr 480px 1fr;
-    gap: 2rem;
-    max-width: 1100px;
-    margin: 3rem auto;
-    padding: 0 1.5rem;
-    width: 100%;
-  }
-
+  .main-wrap { display: grid; grid-template-columns: 1fr 480px 1fr; gap: 2rem; max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; width: 100%; }
   .left-panel { padding-top: 1rem; }
-  .hero-tag {
-    display: inline-block;
-    background: var(--teal-light);
-    color: var(--teal);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: 100px;
-    margin-bottom: 1.2rem;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.6rem;
-    color: var(--navy);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-  .hero-desc {
-    font-size: 0.95rem;
-    color: var(--muted);
-    line-height: 1.7;
-    margin-bottom: 2rem;
-  }
+  .hero-tag { display: inline-block; background: var(--teal-light); color: var(--teal); font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 100px; margin-bottom: 1.2rem; letter-spacing: 0.5px; text-transform: uppercase; }
+  .hero-title { font-family: 'DM Serif Display', serif; font-size: 2.6rem; color: var(--navy); line-height: 1.2; margin-bottom: 1rem; }
+  .hero-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.7; margin-bottom: 2rem; }
   .stat-row { display: flex; gap: 1.5rem; margin-bottom: 2.5rem; }
-  .stat-box {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem 1.2rem;
-    flex: 1;
-  }
-  .stat-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.8rem;
-    color: var(--teal);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
+  .stat-box { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; flex: 1; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--teal); line-height: 1; margin-bottom: 4px; }
   .stat-label { font-size: 12px; color: var(--muted); }
-
-  .qr-wrap {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
+  .qr-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; }
   .qr-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
   .qr-text strong { color: var(--text); display: block; margin-bottom: 2px; }
-
-  .form-card {
-    background: var(--white);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    padding: 2.2rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  }
-  .form-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.5rem;
-    color: var(--navy);
-    margin-bottom: 0.3rem;
-  }
+  .form-card { background: var(--white); border-radius: 20px; border: 1px solid var(--border); padding: 2.2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .form-title { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--navy); margin-bottom: 0.3rem; }
   .form-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 1.8rem; }
-
   .field-group { margin-bottom: 1.1rem; }
-  .field-group label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .field-group input, .field-group select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--white);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .field-group input:focus, .field-group select:focus {
-    border-color: var(--teal-mid);
-    box-shadow: 0 0 0 3px rgba(29,158,117,0.1);
-  }
+  .field-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-group input, .field-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--white); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .field-group input:focus, .field-group select:focus { border-color: var(--teal-mid); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
   .error { color: var(--error); font-size: 11px; margin-top: 4px; }
-
   .otp-row { display: flex; gap: 8px; }
   .otp-row input { flex: 1; }
-  .otp-btn {
-    padding: 10px 14px;
-    background: var(--teal-light);
-    color: var(--teal);
-    border: 1px solid var(--teal-mid);
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s;
-  }
+  .otp-btn { padding: 10px 14px; background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-mid); border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
   .otp-btn:hover { background: #c8eee3; }
+  .otp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .otp-field { display: none; margin-top: 8px; }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--teal);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-top: 1px solid var(--border);
-    padding-top: 1rem;
-    margin: 1.2rem 0 0.8rem;
-  }
-
+  .section-label { font-size: 11px; font-weight: 500; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid var(--border); padding-top: 1rem; margin: 1.2rem 0 0.8rem; }
   .addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
-
-  .submit-btn {
-    width: 100%;
-    padding: 13px;
-    background: var(--teal);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 1.4rem;
-    transition: background 0.2s, transform 0.1s;
-  }
+  .submit-btn { width: 100%; padding: 13px; background: var(--teal); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 1.4rem; transition: background 0.2s, transform 0.1s; }
   .submit-btn:hover { background: #0a5a47; }
-  .submit-btn:active { transform: scale(0.99); }
-
-  @media (max-width: 900px) {
-    .main-wrap { grid-template-columns: 1fr; }
-    .left-panel { display: none; }
-  }
+  .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+  .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; display: none; }
+  .toast.success { background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-mid); }
+  .toast.error-toast { background: #fef2f2; color: var(--error); border: 1px solid #fca5a5; }
+  @media (max-width: 900px) { .main-wrap { grid-template-columns: 1fr; } .left-panel { display: none; } }
 </style>
 </head>
 <body>
 
+<div class="toast" id="toast"></div>
+
 <nav>
-  <div class="logo-mark">
-    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-  </div>
+  <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
   <div class="logo-text">Medi<span>Queue</span></div>
 </nav>
 
@@ -225,21 +71,12 @@
     <h1 class="hero-title">Skip the wait.<br>Not the care.</h1>
     <p class="hero-desc">MediQueue intelligently assigns tokens, routes you to the right doctor, and keeps you updated in real time — so your hospital visit is effortless.</p>
     <div class="stat-row">
-      <div class="stat-box">
-        <div class="stat-num">3x</div>
-        <div class="stat-label">Faster check-in</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num">0</div>
-        <div class="stat-label">Paper tokens needed</div>
-      </div>
+      <div class="stat-box"><div class="stat-num">3x</div><div class="stat-label">Faster check-in</div></div>
+      <div class="stat-box"><div class="stat-num">0</div><div class="stat-label">Paper tokens needed</div></div>
     </div>
     <div class="qr-wrap">
       <canvas id="qrCode" width="70" height="70"></canvas>
-      <div class="qr-text">
-        <strong>Scan to open on mobile</strong>
-        Share with patients for quick access
-      </div>
+      <div class="qr-text"><strong>Scan to open on mobile</strong>Share with patients for quick access</div>
     </div>
   </div>
 
@@ -256,7 +93,7 @@
         <label>Phone Number</label>
         <div class="otp-row">
           <input type="text" id="pphone" placeholder="10-digit mobile number" maxlength="10">
-          <button type="button" class="otp-btn" onclick="sendOTP()">Send OTP</button>
+          <button type="button" class="otp-btn" id="otpBtn" onclick="sendOTP()">Send OTP</button>
         </div>
         <div id="phoneError" class="error"></div>
       </div>
@@ -303,67 +140,116 @@
         <input type="text" id="village" placeholder="Village or locality">
         <div id="villageError" class="error"></div>
       </div>
-      <button type="submit" class="submit-btn">Get My Token →</button>
+      <button type="submit" class="submit-btn" id="loginBtn">Get My Token →</button>
     </form>
   </div>
   <div></div>
 </div>
 
 <script>
-let generatedOTP = "";
+// ✅ YOUR RAILWAY BACKEND LINK
+const API = "https://graceful-victory-production-1944.up.railway.app";
 
-function clearErrors(){
+function showToast(msg, type="success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (type === "success" ? "success" : "error-toast");
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 3500);
+}
+
+function clearErrors() {
   document.querySelectorAll(".error").forEach(e => e.innerHTML = "");
 }
 
-function sendOTP(){
+async function sendOTP() {
   clearErrors();
-  let phone = document.getElementById("pphone").value;
-  if(!/^[0-9]{10}$/.test(phone)){
+  const phone = document.getElementById("pphone").value;
+  if (!/^[0-9]{10}$/.test(phone)) {
     document.getElementById("phoneError").innerHTML = "Enter valid 10-digit number";
     return;
   }
-  generatedOTP = Math.floor(100000 + Math.random() * 900000);
-  alert("Demo OTP: " + generatedOTP);
-  document.getElementById("otpBox").style.display = "block";
+  const btn = document.getElementById("otpBtn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+  try {
+    const res  = await fetch(`${API}/api/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById("otpBox").style.display = "block";
+      showToast("OTP sent! Demo OTP: " + data.demoOtp);
+      btn.textContent = "OTP Sent ✓";
+    } else {
+      document.getElementById("phoneError").innerHTML = data.message;
+      btn.disabled = false;
+      btn.textContent = "Send OTP";
+    }
+  } catch {
+    showToast("Cannot reach server!", "error");
+    btn.disabled = false;
+    btn.textContent = "Send OTP";
+  }
 }
 
-function login(){
+async function login() {
   clearErrors();
-  let name = document.getElementById("pname").value.trim();
-  let phone = document.getElementById("pphone").value.trim();
-  let email = document.getElementById("pemail").value.trim();
-  let district = document.getElementById("district").value.trim();
-  let mandal = document.getElementById("mandal").value.trim();
-  let village = document.getElementById("village").value.trim();
-  let problem = document.getElementById("problem").value;
-  let otp = document.getElementById("otp").value;
+  const name     = document.getElementById("pname").value.trim();
+  const phone    = document.getElementById("pphone").value.trim();
+  const email    = document.getElementById("pemail").value.trim();
+  const district = document.getElementById("district").value.trim();
+  const mandal   = document.getElementById("mandal").value.trim();
+  const village  = document.getElementById("village").value.trim();
+  const problem  = document.getElementById("problem").value;
+  const otp      = document.getElementById("otp").value.trim();
   let valid = true;
 
-  if(!name){ document.getElementById("nameError").innerHTML = "Name is required"; valid = false; }
-  if(!/^[0-9]{10}$/.test(phone)){ document.getElementById("phoneError").innerHTML = "Enter valid phone"; valid = false; }
-  if(!/^[^ ]+@[^ ]+\.[a-z]{2,3}$/.test(email)){ document.getElementById("emailError").innerHTML = "Invalid email"; valid = false; }
-  if(!problem){ document.getElementById("problemError").innerHTML = "Please select a concern"; valid = false; }
-  if(!district){ document.getElementById("districtError").innerHTML = "District required"; valid = false; }
-  if(!mandal){ document.getElementById("mandalError").innerHTML = "Mandal required"; valid = false; }
-  if(!village){ document.getElementById("villageError").innerHTML = "Village required"; valid = false; }
-  if(otp != generatedOTP){ document.getElementById("otpError").innerHTML = "Invalid OTP"; valid = false; }
+  if (!name)    { document.getElementById("nameError").innerHTML = "Name is required"; valid = false; }
+  if (!/^[0-9]{10}$/.test(phone)) { document.getElementById("phoneError").innerHTML = "Enter valid phone"; valid = false; }
+  if (!/^[^ ]+@[^ ]+\.[a-z]{2,3}$/.test(email)) { document.getElementById("emailError").innerHTML = "Invalid email"; valid = false; }
+  if (!problem)  { document.getElementById("problemError").innerHTML = "Please select a concern"; valid = false; }
+  if (!district) { document.getElementById("districtError").innerHTML = "District required"; valid = false; }
+  if (!mandal)   { document.getElementById("mandalError").innerHTML = "Mandal required"; valid = false; }
+  if (!village)  { document.getElementById("villageError").innerHTML = "Village required"; valid = false; }
+  if (!otp)      { document.getElementById("otpError").innerHTML = "Enter OTP"; valid = false; }
+  if (!valid) return false;
 
-  if(!valid) return false;
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
 
-  let patients = JSON.parse(localStorage.getItem("patients")) || {};
-  let id = patients[phone] ? patients[phone].id : "PAT" + Math.floor(1000 + Math.random() * 9000);
-  patients[phone] = { id, name, email };
-  localStorage.setItem("patients", JSON.stringify(patients));
-  localStorage.setItem("currentPatient", JSON.stringify({ id, name, email, district, mandal, village, problem, phone }));
-  window.location.href = "dashboard.html";
+  try {
+    const res  = await fetch(`${API}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone, email, district, mandal, village, problem, otp })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("currentPatient", JSON.stringify(data.patient));
+      showToast("Login successful! Redirecting...");
+      setTimeout(() => window.location.href = "dashboard.html", 1000);
+    } else {
+      document.getElementById("otpError").innerHTML = data.message;
+      btn.disabled = false;
+      btn.textContent = "Get My Token →";
+    }
+  } catch {
+    showToast("Cannot reach server!", "error");
+    btn.disabled = false;
+    btn.textContent = "Get My Token →";
+  }
   return false;
 }
 
-window.onload = function(){
+window.onload = function() {
   let url = window.location.origin + window.location.pathname;
-  if(url.startsWith("file://")) url = "https://your-hosted-link.netlify.app";
-  if(typeof QRCode !== 'undefined') QRCode.toCanvas(document.getElementById("qrCode"), url);
+  if (url.startsWith("file://")) url = "https://your-netlify-link.netlify.app";
+  if (typeof QRCode !== 'undefined') QRCode.toCanvas(document.getElementById("qrCode"), url);
 };
 </script>
 </body>

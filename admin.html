@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediQueue — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #1D9E75;
+    --navy: #042C53; --blue-light: #E6F1FB; --blue-mid: #185FA5;
+    --text: #1a1a2e; --muted: #6b7280; --border: #e5e7eb; --white: #ffffff;
+    --amber: #BA7517; --amber-light: #FAEEDA; --surface: #f8fafb;
+    --red: #A32D2D; --red-light: #FCEBEB;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--surface); min-height: 100vh; }
+
+  /* LOGIN */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-card { background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; width: 380px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
+  .login-icon { width: 56px; height: 56px; background: var(--navy); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; }
+  .login-icon svg { width: 28px; height: 28px; fill: white; }
+  .login-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--navy); margin-bottom: 0.3rem; }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.8rem; }
+  .login-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 1rem; }
+  .login-input:focus { border-color: var(--navy); }
+  .login-btn { width: 100%; padding: 12px; background: var(--navy); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; }
+  .login-btn:hover { background: #063a6e; }
+  .login-error { color: var(--red); font-size: 12px; margin-top: -6px; margin-bottom: 10px; }
+
+  /* MAIN */
+  .main-panel { display: none; }
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: white; }
+  .logo-text span { color: #5DCAA5; }
+  .admin-badge { background: rgba(255,255,255,0.15); color: white; font-size: 11px; padding: 3px 10px; border-radius: 100px; margin-left: 10px; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .date-label { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .nav-logout { padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3); background: transparent; border-radius: 8px; font-size: 13px; cursor: pointer; color: white; }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* HERO SERVING */
+  .serving-hero { background: var(--navy); border-radius: 20px; padding: 2rem; text-align: center; margin-bottom: 1.8rem; color: white; }
+  .serving-label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+  .serving-num { font-family: 'DM Serif Display', serif; font-size: 5rem; line-height: 1; color: #5DCAA5; }
+  .serving-name { font-size: 15px; color: rgba(255,255,255,0.7); margin: 0.5rem 0 1.5rem; }
+  .next-btn { padding: 14px 40px; background: #1D9E75; color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+  .next-btn:hover { background: #0F6E56; }
+  .next-btn:disabled { background: #4b5563; cursor: not-allowed; }
+  .reset-btn { padding: 10px 24px; background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; margin-left: 10px; }
+  .reset-btn:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.8rem; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.4rem; }
+  .stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; font-size: 18px; }
+  .stat-icon.teal { background: var(--teal-light); }
+  .stat-icon.blue { background: var(--blue-light); }
+  .stat-icon.amber { background: var(--amber-light); }
+  .stat-icon.red { background: var(--red-light); }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--navy); line-height: 1; }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* TABLES */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+  .count-badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 500; background: var(--teal-light); color: var(--teal); }
+  .count-badge.done { background: var(--blue-light); color: var(--blue-mid); }
+
+  .queue-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .queue-table th { text-align: left; padding: 8px 10px; color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+  .queue-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .queue-table tr:last-child td { border-bottom: none; }
+  .queue-table tr.serving-row td { background: var(--blue-light); }
+
+  .token-pill { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; font-weight: 500; color: var(--navy); font-size: 13px; }
+  .status-chip { font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+  .status-chip.waiting { background: var(--amber-light); color: var(--amber); }
+  .status-chip.serving { background: var(--blue-light); color: var(--blue-mid); }
+  .status-chip.done    { background: var(--teal-light); color: var(--teal); }
+  .empty-row td { text-align: center; color: var(--muted); padding: 2rem; }
+
+  .live-dot { width: 8px; height: 8px; background: #1D9E75; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; display: none; }
+  .toast.success { background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-mid); }
+  .toast.error-toast { background: var(--red-light); color: var(--red); border: 1px solid #f09595; }
+
+  @media (max-width: 768px) { .stats-row { grid-template-columns: 1fr 1fr; } .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5z"/></svg>
+    </div>
+    <div class="login-title">Admin Login</div>
+    <div class="login-sub">Enter your admin key to manage the queue</div>
+    <input type="password" class="login-input" id="adminKey" placeholder="Enter admin key" onkeydown="if(event.key==='Enter') adminLogin()">
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" onclick="adminLogin()">Access Panel →</button>
+  </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div class="main-panel" id="mainPanel">
+  <nav>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="logo-text">Medi<span>Queue</span></div>
+      <span class="admin-badge">Admin</span>
+      <span class="live-dot" style="margin-left:6px;"></span>
+    </div>
+    <div class="nav-right">
+      <span class="date-label" id="dateLabel"></span>
+      <button class="nav-logout" onclick="adminLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- NOW SERVING -->
+    <div class="serving-hero">
+      <div class="serving-label">Now Serving Token</div>
+      <div class="serving-num" id="nowServingNum">—</div>
+      <div class="serving-name" id="nowServingName">No patient currently serving</div>
+      <button class="next-btn" id="nextBtn" onclick="callNext()">Call Next Patient →</button>
+      <button class="reset-btn" onclick="resetQueue()">Reset Queue</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon teal">⏳</div><div class="stat-val" id="statWaiting">0</div><div class="stat-lbl">Waiting</div></div>
+      <div class="stat-card"><div class="stat-icon blue">👨‍⚕️</div><div class="stat-val" id="statServing">—</div><div class="stat-lbl">Now Serving</div></div>
+      <div class="stat-card"><div class="stat-icon amber">✅</div><div class="stat-val" id="statDone">0</div><div class="stat-lbl">Served Today</div></div>
+      <div class="stat-card"><div class="stat-icon red">📊</div><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">Total Today</div></div>
+    </div>
+
+    <!-- QUEUE TABLES -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">
+          Waiting Queue
+          <span class="count-badge" id="waitingCount">0</span>
+        </div>
+        <table class="queue-table">
+          <thead><tr><th>Token</th><th>Patient</th><th>Problem</th><th>Status</th></tr></thead>
+          <tbody id="waitingBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          Served Today
+          <span class="count-badge done" id="doneCount">0</span>
+        </div>
+        <table class="queue-table">
+          <thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Status</th></tr></thead>
+          <tbody id="doneBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ✅ YOUR RAILWAY BACKEND LINK
+const API = "https://graceful-victory-production-1944.up.railway.app";
+let ADMIN_KEY = "";
+let socket = null;
+
+function showToast(msg, type="success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (type === "success" ? "success" : "error-toast");
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 3500);
+}
+
+function adminLogin() {
+  const key = document.getElementById("adminKey").value.trim();
+  if (!key) { document.getElementById("loginError").innerText = "Enter admin key"; return; }
+  ADMIN_KEY = key;
+
+  fetch(`${API}/api/admin/stats`, { headers: { "admin-key": ADMIN_KEY } })
+    .then(res => {
+      if (res.ok) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("mainPanel").style.display = "block";
+        document.getElementById("dateLabel").innerText = new Date().toDateString();
+        initSocket();
+        loadQueue();
+        setInterval(loadQueue, 5000);
+      } else {
+        document.getElementById("loginError").innerText = "Invalid admin key!";
+      }
+    })
+    .catch(() => {
+      document.getElementById("loginError").innerText = "Cannot reach server. Is backend running?";
+    });
+}
+
+function adminLogout() {
+  ADMIN_KEY = "";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("mainPanel").style.display = "none";
+  document.getElementById("adminKey").value = "";
+}
+
+function initSocket() {
+  socket = io(API);
+  socket.on("queueUpdated", () => loadQueue());
+  socket.on("nowServing", (data) => {
+    showToast("Now serving Token #" + data.tokenNumber + " — " + data.patientName);
+  });
+}
+
+async function loadQueue() {
+  try {
+    const res  = await fetch(`${API}/api/admin/queue`, { headers: { "admin-key": ADMIN_KEY } });
+    const data = await res.json();
+    if (!res.ok) return;
+
+    const { waiting, serving, done, stats } = data;
+    const nowServing = serving && serving.length > 0 ? serving[0] : null;
+
+    // Hero section
+    document.getElementById("nowServingNum").innerText  = nowServing ? nowServing.tokenNumber : "—";
+    document.getElementById("nowServingName").innerText = nowServing ? nowServing.patientName + " · " + nowServing.problem : "No patient currently serving";
+
+    // Stats
+    document.getElementById("statWaiting").innerText = stats.totalWaiting;
+    document.getElementById("statServing").innerText = nowServing ? nowServing.tokenNumber : "—";
+    document.getElementById("statDone").innerText    = stats.totalServed;
+    document.getElementById("statTotal").innerText   = stats.totalWaiting + stats.totalServed + (nowServing ? 1 : 0);
+
+    // Waiting table
+    const wb = document.getElementById("waitingBody");
+    document.getElementById("waitingCount").innerText = waiting.length + (nowServing ? 1 : 0);
+    wb.innerHTML = "";
+
+    if (nowServing) {
+      wb.innerHTML += `<tr class="serving-row">
+        <td><span class="token-pill">${nowServing.tokenNumber}</span></td>
+        <td>${nowServing.patientName}</td>
+        <td>${nowServing.problem}</td>
+        <td><span class="status-chip serving">Serving</span></td>
+      </tr>`;
+    }
+
+    if (waiting.length === 0 && !nowServing) {
+      wb.innerHTML = '<tr class="empty-row"><td colspan="4">No patients waiting</td></tr>';
+    } else {
+      waiting.forEach(p => {
+        wb.innerHTML += `<tr>
+          <td><span class="token-pill">${p.tokenNumber}</span></td>
+          <td>${p.patientName}</td>
+          <td>${p.problem}</td>
+          <td><span class="status-chip waiting">Waiting</span></td>
+        </tr>`;
+      });
+    }
+
+    // Done table
+    const db = document.getElementById("doneBody");
+    document.getElementById("doneCount").innerText = done.length;
+    db.innerHTML = "";
+    if (done.length === 0) {
+      db.innerHTML = '<tr class="empty-row"><td colspan="4">No patients served yet</td></tr>';
+    } else {
+      [...done].reverse().forEach(p => {
+        db.innerHTML += `<tr>
+          <td><span class="token-pill">${p.tokenNumber}</span></td>
+          <td>${p.patientName}</td>
+          <td>${p.doctor}</td>
+          <td><span class="status-chip done">Done</span></td>
+        </tr>`;
+      });
+    }
+
+  } catch { showToast("Cannot reach server", "error"); }
+}
+
+async function callNext() {
+  const btn = document.getElementById("nextBtn");
+  btn.disabled = true;
+  btn.textContent = "Calling...";
+  try {
+    const res  = await fetch(`${API}/api/admin/next`, {
+      method: "POST",
+      headers: { "admin-key": ADMIN_KEY }
+    });
+    const data = await res.json();
+    showToast(data.message);
+    loadQueue();
+  } catch { showToast("Server error", "error"); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = "Call Next Patient →";
+  }
+}
+
+async function resetQueue() {
+  if (!confirm("Reset today's entire queue? This cannot be undone!")) return;
+  try {
+    const res  = await fetch(`${API}/api/admin/reset`, {
+      method: "POST",
+      headers: { "admin-key": ADMIN_KEY }
+    });
+    const data = await res.json();
+    showToast(data.message);
+    loadQueue();
+  } catch { showToast("Server error", "error"); }
+}
+</script>
+</body>
+</html>

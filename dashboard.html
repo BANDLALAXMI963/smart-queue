@@ -5,34 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediQueue — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --teal: #0F6E56;
-    --teal-light: #E1F5EE;
-    --teal-mid: #1D9E75;
-    --navy: #042C53;
-    --blue-light: #E6F1FB;
-    --blue-mid: #185FA5;
-    --text: #1a1a2e;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --amber: #BA7517;
-    --amber-light: #FAEEDA;
-    --surface: #f8fafb;
-    --red-light: #FCEBEB;
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #1D9E75;
+    --navy: #042C53; --blue-light: #E6F1FB; --blue-mid: #185FA5;
+    --text: #1a1a2e; --muted: #6b7280; --border: #e5e7eb; --white: #ffffff;
+    --amber: #BA7517; --amber-light: #FAEEDA; --surface: #f8fafb; --red-light: #FCEBEB;
   }
-
   body { font-family: 'DM Sans', sans-serif; background: var(--surface); min-height: 100vh; color: var(--text); }
-
-  nav {
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 2rem;
-    display: flex; align-items: center; justify-content: space-between;
-  }
+  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
   .nav-left { display: flex; align-items: center; gap: 10px; }
   .logo-mark { width: 34px; height: 34px; background: var(--teal); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
   .logo-mark svg { width: 18px; height: 18px; fill: white; }
@@ -40,14 +23,12 @@
   .logo-text span { color: var(--teal-mid); }
   .nav-user { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
   .avatar { width: 34px; height: 34px; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--teal); }
-  #welcomeText { font-weight: 500; color: var(--text); }
   .logout-btn { padding: 6px 14px; border: 1px solid var(--border); background: white; border-radius: 8px; font-size: 13px; cursor: pointer; color: var(--muted); }
-  .logout-btn:hover { background: var(--surface); }
-
   .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
   .page-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--navy); }
   .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 4px; margin-bottom: 1.8rem; }
-
+  .live-dot { width: 8px; height: 8px; background: var(--teal-mid); border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.8rem; }
   .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.4rem; }
   .stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; font-size: 18px; }
@@ -57,30 +38,23 @@
   .stat-icon.red { background: var(--red-light); }
   .stat-val { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--navy); line-height: 1; }
   .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
   .card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
   .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1.2rem; }
-
   .field-group { margin-bottom: 1rem; }
   .field-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
   .field-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: white; color: var(--text); outline: none; }
-  .field-group select:focus { border-color: var(--teal-mid); }
-
   .token-btn { width: 100%; padding: 13px; background: var(--teal); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s; }
   .token-btn:hover { background: #0a5a47; }
   .token-btn:disabled { background: #9ca3af; cursor: not-allowed; }
-
   .token-display { display: none; margin-top: 1.2rem; background: var(--teal-light); border: 1px solid var(--teal-mid); border-radius: 12px; padding: 1.2rem; text-align: center; }
   .token-number { font-family: 'DM Serif Display', serif; font-size: 3rem; color: var(--teal); line-height: 1; }
   .token-label { font-size: 13px; color: var(--teal); margin-top: 4px; }
-
   .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; font-size: 13px; font-weight: 500; margin-top: 10px; }
   .badge-waiting { background: var(--amber-light); color: var(--amber); }
   .badge-soon { background: var(--blue-light); color: var(--blue-mid); }
   .badge-now { background: var(--teal-light); color: var(--teal); }
-
-  .queue-list { list-style: none; }
+  .queue-list { list-style: none; max-height: 340px; overflow-y: auto; }
   .queue-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); }
   .queue-item.my-turn { background: var(--teal-light); border-color: var(--teal-mid); }
   .queue-item.current { background: var(--blue-light); border-color: #B5D4F4; }
@@ -89,59 +63,41 @@
   .q-tag { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px; }
   .q-tag.now { background: var(--blue-light); color: var(--blue-mid); }
   .q-tag.mine { background: var(--teal-light); color: var(--teal); }
-
-  .ahead-display { text-align: center; padding: 1rem; border-radius: 12px; margin-top: 1rem; border: 1px solid var(--border); }
+  .ahead-display { text-align: center; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem; }
   .ahead-num { font-family: 'DM Serif Display', serif; font-size: 2.5rem; color: var(--navy); }
   .ahead-lbl { font-size: 13px; color: var(--muted); }
   .empty-state { text-align: center; padding: 2rem; color: var(--muted); font-size: 14px; }
-
-  @media (max-width: 768px) {
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .two-col { grid-template-columns: 1fr; }
-  }
+  .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; display: none; }
+  .toast.success { background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-mid); }
+  .toast.error-toast { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+  @media (max-width: 768px) { .stats-row { grid-template-columns: 1fr 1fr; } .two-col { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
+<div class="toast" id="toast"></div>
+
 <nav>
   <div class="nav-left">
-    <div class="logo-mark">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-    </div>
+    <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <div class="logo-text">Medi<span>Queue</span></div>
   </div>
   <div class="nav-user">
     <div class="avatar" id="avatarInitials">--</div>
-    <span id="welcomeText">Loading...</span>
+    <span id="welcomeText" style="font-weight:500;color:var(--text)">Loading...</span>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </nav>
 
 <div class="page">
   <div class="page-title">Patient Dashboard</div>
-  <div class="page-subtitle">Select your doctor and generate a queue token</div>
+  <div class="page-subtitle"><span class="live-dot"></span>Live queue — updates in real time</div>
 
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-icon teal">🏥</div>
-      <div class="stat-val" id="totalInQueue">0</div>
-      <div class="stat-lbl">Total in Queue</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon blue">🎫</div>
-      <div class="stat-val" id="myTokenStat">—</div>
-      <div class="stat-lbl">Your Token</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon amber">⏳</div>
-      <div class="stat-val" id="aheadStat">—</div>
-      <div class="stat-lbl">Ahead of You</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon red">📍</div>
-      <div class="stat-val" id="currentTokenStat">—</div>
-      <div class="stat-lbl">Now Serving</div>
-    </div>
+    <div class="stat-card"><div class="stat-icon teal">🏥</div><div class="stat-val" id="totalInQueue">0</div><div class="stat-lbl">Total in Queue</div></div>
+    <div class="stat-card"><div class="stat-icon blue">🎫</div><div class="stat-val" id="myTokenStat">—</div><div class="stat-lbl">Your Token</div></div>
+    <div class="stat-card"><div class="stat-icon amber">⏳</div><div class="stat-val" id="aheadStat">—</div><div class="stat-lbl">Ahead of You</div></div>
+    <div class="stat-card"><div class="stat-icon red">📍</div><div class="stat-val" id="currentTokenStat">—</div><div class="stat-lbl">Now Serving</div></div>
   </div>
 
   <div class="two-col">
@@ -149,7 +105,10 @@
       <div class="card-title">Book Your Slot</div>
       <div class="field-group">
         <label>Hospital</label>
-        <select id="hospital" onchange="loadDoctors()"></select>
+        <select id="hospital" onchange="loadDoctors()">
+          <option value="City Hospital">City Hospital</option>
+          <option value="District Hospital">District Hospital</option>
+        </select>
       </div>
       <div class="field-group">
         <label>Doctor / Department</label>
@@ -169,7 +128,6 @@
         <div class="ahead-num" id="aheadNum">—</div>
         <div class="ahead-lbl" id="aheadLbl">Generate a token to see your position</div>
       </div>
-      <br>
       <ul class="queue-list" id="waitingList">
         <li class="empty-state">No one in queue yet</li>
       </ul>
@@ -178,147 +136,173 @@
 </div>
 
 <script>
-let hospitalsData = {
-  "default": [
-    {
-      name: "City Hospital",
-      doctors: [
-        { name: "Dr. Ravi Kumar", dept: "General", time: "10am – 2pm" },
-        { name: "Dr. Sita Reddy", dept: "Skin", time: "2pm – 6pm" },
-        { name: "Dr. Arjun Rao", dept: "Heart", time: "9am – 1pm" },
-        { name: "Dr. Meena Rao", dept: "Eye", time: "11am – 3pm" },
-        { name: "Dr. Suresh B", dept: "Ortho", time: "3pm – 7pm" }
-      ]
-    }
+// ✅ YOUR RAILWAY BACKEND LINK
+const API = "https://graceful-victory-production-1944.up.railway.app";
+const socket = io(API);
+
+let patient = null;
+let myToken = null;
+
+const doctors = {
+  "City Hospital": [
+    { name: "Dr. Ravi Kumar", dept: "General", time: "10am–2pm" },
+    { name: "Dr. Sita Reddy", dept: "Skin",    time: "2pm–6pm"  },
+    { name: "Dr. Arjun Rao",  dept: "Heart",   time: "9am–1pm"  },
+    { name: "Dr. Meena Rao",  dept: "Eye",     time: "11am–3pm" },
+    { name: "Dr. Suresh B",   dept: "Ortho",   time: "3pm–7pm"  }
+  ],
+  "District Hospital": [
+    { name: "Dr. Prakash M",  dept: "General", time: "9am–1pm"  },
+    { name: "Dr. Kavitha R",  dept: "Dental",  time: "10am–4pm" }
   ]
 };
 
-let patient = null;
+function showToast(msg, type="success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (type === "success" ? "success" : "error-toast");
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 3500);
+}
 
-function load(){
-  patient = JSON.parse(localStorage.getItem("currentPatient"));
-  if(!patient){ location = "index.html"; return; }
-
-  let initials = patient.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
-  document.getElementById("avatarInitials").innerText = initials;
-  document.getElementById("welcomeText").innerText = patient.name + "  ·  " + patient.id;
-
-  let hospitalSel = document.getElementById("hospital");
-  hospitalsData["default"].forEach(h => {
-    let opt = document.createElement("option");
-    opt.value = h.name; opt.text = h.name;
-    hospitalSel.appendChild(opt);
+function loadDoctors() {
+  const problem  = patient ? patient.problem.toLowerCase() : "";
+  const hospital = document.getElementById("hospital").value;
+  const sel      = document.getElementById("doctor");
+  sel.innerHTML  = "";
+  let list = doctors[hospital] || [];
+  let filtered = list.filter(d => {
+    if (problem.includes("skin")   && d.dept !== "Skin")   return false;
+    if (problem.includes("heart")  && d.dept !== "Heart")  return false;
+    if (problem.includes("eye")    && d.dept !== "Eye")    return false;
+    if (problem.includes("ortho")  && d.dept !== "Ortho")  return false;
+    if (problem.includes("dental") && d.dept !== "Dental") return false;
+    return true;
   });
-
-  loadDoctors();
-
-  let myToken = localStorage.getItem("myToken");
-  if(myToken){
-    document.getElementById("tokenDisplay").style.display = "block";
-    document.getElementById("tokenNum").innerText = myToken;
-    document.getElementById("tokenBtn").disabled = true;
-    document.getElementById("tokenBtn").innerText = "Token Already Generated";
-  }
-
-  updateQueue();
-  setInterval(updateQueue, 3000);
-}
-
-function loadDoctors(){
-  let problem = (patient && patient.problem) ? patient.problem.toLowerCase() : "";
-  let hname = document.getElementById("hospital").value;
-  let doctorSel = document.getElementById("doctor");
-  doctorSel.innerHTML = "";
-  let hospital = hospitalsData["default"].find(h => h.name == hname);
-  if(!hospital) return;
-
-  hospital.doctors.forEach(d => {
-    if(problem.includes("skin") && d.dept != "Skin") return;
-    if(problem.includes("heart") && d.dept != "Heart") return;
-    if(problem.includes("eye") && d.dept != "Eye") return;
-    if(problem.includes("ortho") && d.dept != "Ortho") return;
-    let opt = document.createElement("option");
-    opt.text = d.name + " (" + d.dept + ") — " + d.time;
-    doctorSel.appendChild(opt);
+  if (filtered.length === 0) filtered = list;
+  filtered.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d.name;
+    opt.text  = `${d.name} (${d.dept}) — ${d.time}`;
+    sel.appendChild(opt);
   });
-
-  if(doctorSel.options.length === 0){
-    hospital.doctors.forEach(d => {
-      let opt = document.createElement("option");
-      opt.text = d.name + " (" + d.dept + ") — " + d.time;
-      doctorSel.appendChild(opt);
-    });
-  }
 }
 
-function generateToken(){
-  let queue = JSON.parse(localStorage.getItem("queue")) || [];
-  let tokenNo = queue.length + 1;
-  queue.push({ token: tokenNo, name: patient.name });
-  localStorage.setItem("queue", JSON.stringify(queue));
-  localStorage.setItem("myToken", tokenNo);
+async function generateToken() {
+  const doctor   = document.getElementById("doctor").value;
+  const hospital = document.getElementById("hospital").value;
+  const token    = localStorage.getItem("token");
+  const btn      = document.getElementById("tokenBtn");
+  btn.disabled   = true;
+  btn.textContent = "Generating...";
 
-  document.getElementById("tokenDisplay").style.display = "block";
-  document.getElementById("tokenNum").innerText = tokenNo;
-  document.getElementById("tokenBtn").disabled = true;
-  document.getElementById("tokenBtn").innerText = "Token Generated ✓";
-  document.getElementById("myTokenStat").innerText = tokenNo;
-  updateQueue();
-}
-
-function updateQueue(){
-  let myToken = parseInt(localStorage.getItem("myToken")) || null;
-  let queue = JSON.parse(localStorage.getItem("queue")) || [];
-
-  document.getElementById("totalInQueue").innerText = queue.length;
-  let current = queue.length > 0 ? queue[0].token : null;
-  document.getElementById("currentTokenStat").innerText = current || "—";
-
-  let list = document.getElementById("waitingList");
-  list.innerHTML = "";
-  if(queue.length === 0){
-    list.innerHTML = '<li class="empty-state">Queue is empty</li>';
-  } else {
-    queue.forEach((p, i) => {
-      let li = document.createElement("li");
-      let isMe = myToken && p.token === myToken;
-      let isFirst = i === 0;
-      li.className = "queue-item" + (isMe ? " my-turn" : isFirst ? " current" : "");
-      let tag = "";
-      if(isFirst && !isMe) tag = '<span class="q-tag now">Now</span>';
-      if(isMe) tag = '<span class="q-tag mine">You</span>';
-      li.innerHTML = `<div class="q-token">${p.token}</div><div class="q-name">${p.name}</div>${tag}`;
-      list.appendChild(li);
+  try {
+    const res  = await fetch(`${API}/api/queue/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "authorization": token },
+      body: JSON.stringify({ doctor, hospital })
     });
-  }
-
-  if(myToken){
-    let ahead = myToken - (current || 0);
-    if(ahead < 0) ahead = 0;
-    document.getElementById("aheadNum").innerText = ahead;
-    document.getElementById("aheadLbl").innerText = ahead > 0 ? "patients ahead of you" : "It's your turn!";
-    document.getElementById("aheadStat").innerText = ahead;
-    document.getElementById("myTokenStat").innerText = myToken;
-
-    let badge = document.getElementById("statusBadge");
-    if(ahead === 0){
-      badge.innerHTML = '<div class="status-badge badge-now">🟢 Your Turn Now!</div>';
-    } else if(ahead <= 2){
-      badge.innerHTML = '<div class="status-badge badge-soon">🔔 Coming Soon</div>';
-      if(ahead === 2 && !window._alerted){ alert("🔔 Only 2 patients ahead — get ready!"); window._alerted = true; }
+    const data = await res.json();
+    if (res.ok) {
+      myToken = data.tokenNumber;
+      document.getElementById("tokenDisplay").style.display = "block";
+      document.getElementById("tokenNum").innerText    = myToken;
+      document.getElementById("myTokenStat").innerText = myToken;
+      btn.textContent = "Token Generated ✓";
+      showToast("Token #" + myToken + " generated!");
+      fetchQueue();
     } else {
-      badge.innerHTML = '<div class="status-badge badge-waiting">⏳ Waiting</div>';
+      showToast(data.message, "error");
+      if (data.token) {
+        myToken = data.token;
+        document.getElementById("tokenDisplay").style.display = "block";
+        document.getElementById("tokenNum").innerText    = myToken;
+        document.getElementById("myTokenStat").innerText = myToken;
+        btn.textContent = "Token Already Exists ✓";
+      } else {
+        btn.disabled = false;
+        btn.textContent = "Generate Token";
+      }
     }
+  } catch {
+    showToast("Cannot reach server!", "error");
+    btn.disabled = false;
+    btn.textContent = "Generate Token";
   }
 }
 
-function logout(){
-  localStorage.removeItem("currentPatient");
-  localStorage.removeItem("myToken");
-  location.href = "index.html";
+async function fetchQueue() {
+  try {
+    const res  = await fetch(`${API}/api/queue/today`);
+    const data = await res.json();
+    renderQueue(data.queue, data.currentToken);
+    document.getElementById("totalInQueue").innerText     = data.totalWaiting;
+    document.getElementById("currentTokenStat").innerText = data.currentToken || "—";
+  } catch {}
 }
 
-window.onload = load;
+function renderQueue(queue, currentToken) {
+  const list = document.getElementById("waitingList");
+  list.innerHTML = "";
+  if (!queue || queue.length === 0) {
+    list.innerHTML = '<li class="empty-state">Queue is empty</li>';
+    return;
+  }
+  queue.forEach((p, i) => {
+    const isMe    = myToken && p.tokenNumber === myToken;
+    const isFirst = i === 0;
+    const li = document.createElement("li");
+    li.className = "queue-item" + (isMe ? " my-turn" : isFirst ? " current" : "");
+    let tag = "";
+    if (isFirst && !isMe) tag = '<span class="q-tag now">Now</span>';
+    if (isMe)              tag = '<span class="q-tag mine">You</span>';
+    li.innerHTML = `<div class="q-token">${p.tokenNumber}</div><div class="q-name">${p.patientName}</div>${tag}`;
+    list.appendChild(li);
+  });
+
+  if (myToken) {
+    const myPos = queue.findIndex(q => q.tokenNumber === myToken);
+    const ahead = myPos === -1 ? 0 : myPos;
+    document.getElementById("aheadNum").innerText  = ahead;
+    document.getElementById("aheadStat").innerText = ahead;
+    document.getElementById("aheadLbl").innerText  = ahead > 0 ? "patients ahead of you" : "It's your turn!";
+    const badge = document.getElementById("statusBadge");
+    if (ahead === 0)     badge.innerHTML = '<div class="status-badge badge-now">🟢 Your Turn Now!</div>';
+    else if (ahead <= 2) badge.innerHTML = '<div class="status-badge badge-soon">🔔 Coming Soon</div>';
+    else                 badge.innerHTML = '<div class="status-badge badge-waiting">⏳ Waiting</div>';
+  }
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "inex.html";
+}
+
+// ✅ Real-time socket updates
+socket.on("queueUpdated", (queue) => {
+  const current = queue.find(q => q.status === "serving") || queue[0];
+  renderQueue(queue, current ? current.tokenNumber : null);
+  document.getElementById("totalInQueue").innerText     = queue.length;
+  document.getElementById("currentTokenStat").innerText = current ? current.tokenNumber : "—";
+});
+
+socket.on("nowServing", (data) => {
+  if (myToken && data.tokenNumber === myToken) {
+    showToast("🔔 It's YOUR turn! Token #" + myToken);
+    alert("🔔 Your turn now! Please go to the doctor.");
+  }
+});
+
+window.onload = function() {
+  patient = JSON.parse(localStorage.getItem("currentPatient"));
+  if (!patient) { window.location.href = "inex.html"; return; }
+  const initials = patient.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+  document.getElementById("avatarInitials").innerText = initials;
+  document.getElementById("welcomeText").innerText    = patient.name + " · " + patient.id;
+  loadDoctors();
+  fetchQueue();
+  setInterval(fetchQueue, 5000);
+};
 </script>
 </body>
 </html>
